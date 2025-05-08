@@ -1,21 +1,26 @@
 import Foundation
 import Vision
 import VisionCamera          // v4 API
+import CoreMedia             // for CMSampleBufferGetImageBuffer
 
 @objc(VisionFaceDetector)
 public class VisionFaceDetector: FrameProcessorPlugin {
 
-  /// JS side calls `scanFaces(frame)`
   @objc public static func callback(
     _ frame: Frame,
     withArguments args: [Any]?
   ) -> [[NSNumber]] {
 
-    guard let buffer = frame.buffer else { return [] }
+    // frame.buffer is *always* a CMSampleBuffer in v4
+    let sampleBuffer: CMSampleBuffer = frame.buffer
+
+    guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+      return []
+    }
 
     let request = VNDetectFaceRectanglesRequest()
     try? VNImageRequestHandler(
-      cvPixelBuffer: buffer,
+      cvPixelBuffer: pixelBuffer,
       orientation: .right,
       options: [:]
     ).perform([request])
@@ -27,7 +32,7 @@ public class VisionFaceDetector: FrameProcessorPlugin {
         NSNumber(value: f.boundingBox.origin.x),
         NSNumber(value: f.boundingBox.origin.y),
         NSNumber(value: f.boundingBox.size.width),
-        NSNumber(value: f.boundingBox.size.height)
+        NSNumber(value: f.boundingBox.size.height),
       ]
     }
   }
