@@ -16,6 +16,7 @@ Pod::Spec.new do |s|
     # Include the Swift implementation file
     s.source_files = "VisionFaceDetector.swift"
   
-    # Correct DSL: dependency on VisionCamera core (no =)  
-      s.dependency 'VisionCamera'
+    # Dependency on VisionCamera core
+    s.dependency 'VisionCamera'
+  end
   
