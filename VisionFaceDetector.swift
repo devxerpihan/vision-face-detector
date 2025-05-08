@@ -1,45 +1,34 @@
 import Foundation
 import Vision
-import VisionCamera
+import VisionCamera          // v4 API
 
 @objc(VisionFaceDetector)
-public class VisionFaceDetector: NSObject, FrameProcessorPluginBase {
-  @objc public static func requiresMainQueueSetup() -> Bool { false }
-  @objc public static func name() -> String { "scanFaces" }
+public class VisionFaceDetector: FrameProcessorPlugin {
 
-  public static func callback(
-    _ frame: Frame!,
-    resolver resolve: @escaping Resolve,
-    rejecter reject: @escaping Reject
-  ) {
-    guard let buffer = frame.buffer else {
-      return resolve([])
-    }
+  /// JS side calls `scanFaces(frame)`
+  @objc public static func callback(
+    _ frame: Frame,
+    withArguments args: [Any]?
+  ) -> [[NSNumber]] {
 
-    let request = VNDetectFaceRectanglesRequest { req, err in
-      guard err == nil, let obs = req.results as? [VNFaceObservation] else {
-        return resolve([])
-      }
-      let boxes = obs.map { f in
-        [
-          NSNumber(value: f.boundingBox.origin.x),
-          NSNumber(value: f.boundingBox.origin.y),
-          NSNumber(value: f.boundingBox.size.width),
-          NSNumber(value: f.boundingBox.size.height),
-        ]
-      }
-      resolve(boxes)
-    }
+    guard let buffer = frame.buffer else { return [] }
 
-    let handler = VNImageRequestHandler(
+    let request = VNDetectFaceRectanglesRequest()
+    try? VNImageRequestHandler(
       cvPixelBuffer: buffer,
       orientation: .right,
       options: [:]
-    )
-    do {
-      try handler.perform([request])
-    } catch {
-      resolve([])
+    ).perform([request])
+
+    guard let faces = request.results as? [VNFaceObservation] else { return [] }
+
+    return faces.map { f in
+      [
+        NSNumber(value: f.boundingBox.origin.x),
+        NSNumber(value: f.boundingBox.origin.y),
+        NSNumber(value: f.boundingBox.size.width),
+        NSNumber(value: f.boundingBox.size.height)
+      ]
     }
   }
 }

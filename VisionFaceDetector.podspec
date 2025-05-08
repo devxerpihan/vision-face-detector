@@ -1,22 +1,12 @@
 Pod::Spec.new do |s|
     s.name         = "VisionFaceDetector"
-    s.version      = "0.0.1"
-    s.summary      = "A VisionCamera frame-processor plugin that uses Apple’s Vision.framework to detect faces on iOS."
+    s.version      = "0.0.2"
+    s.summary      = "Vision.framework face detector for VisionCamera v4"
     s.homepage     = "https://github.com/devxerpihan/vision-face-detector"
-    s.license      = { :type => "MIT", :file => "LICENSE" }
+    s.license      = { :type => "MIT" }
     s.author       = { "yasa nugroho" => "yasa@xerpihan.id" }
     s.platform     = :ios, "12.0"
-  
-    # Pull plugin code from this GitHub repo at the specified tag
-    s.source       = {
-      :git => "https://github.com/devxerpihan/vision-face-detector.git",
-      :tag => s.version
-    }
-  
-    # Include the Swift implementation file
     s.source_files = "VisionFaceDetector.swift"
-  
-    # Dependency on VisionCamera core
-    s.dependency 'VisionCamera'
+    s.dependency   "VisionCamera", "~> 4.6"
   end
   
