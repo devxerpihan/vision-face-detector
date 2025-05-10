@@ -4,18 +4,18 @@ import CoreMedia
 
 @objc(VisionFaceDetector)
 public class VisionFaceDetector: FrameProcessorPlugin {
-  
+  // required initializer
   public override init(
     proxy: VisionCameraProxyHolder,
-    options: [AnyHashable:Any]! = [:]
+    options: [AnyHashable : Any]! = [:]
   ) {
     super.init(proxy: proxy, options: options)
   }
 
-  // keep this named `callback` since JS will initFrameProcessorPlugin("callback", {})
-  public override func callback(
+  // THIS must be named `detectFaces` to line up with the macro below
+  @objc public override func detectFaces(
     _ frame: Frame,
-    withArguments args: [AnyHashable:Any]?
+    withArguments args: [AnyHashable : Any]?
   ) -> Any {
     guard
       let sampleBuffer = frame.buffer as? CMSampleBuffer,
@@ -31,13 +31,13 @@ public class VisionFaceDetector: FrameProcessorPlugin {
       options: [:]
     ).perform([request])
 
-    let faces = (request.results as? [VNFaceObservation]) ?? []
-    return faces.map { f in
+    let observations = (request.results as? [VNFaceObservation]) ?? []
+    return observations.map { obs in
       [
-        NSNumber(value: f.boundingBox.origin.x),
-        NSNumber(value: f.boundingBox.origin.y),
-        NSNumber(value: f.boundingBox.size.width),
-        NSNumber(value: f.boundingBox.size.height),
+        NSNumber(value: obs.boundingBox.origin.x),
+        NSNumber(value: obs.boundingBox.origin.y),
+        NSNumber(value: obs.boundingBox.size.width),
+        NSNumber(value: obs.boundingBox.size.height),
       ]
     ]
   }
