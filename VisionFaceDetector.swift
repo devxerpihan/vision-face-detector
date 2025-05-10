@@ -1,5 +1,3 @@
-// VisionFaceDetector.swift
-
 import Foundation
 import Vision
 import VisionCamera    // v4 API
@@ -8,8 +6,8 @@ import CoreMedia       // for CMSampleBufferGetImageBuffer
 @objc(VisionFaceDetector)
 public class VisionFaceDetector: FrameProcessorPlugin {
 
-  // 👉 Rename from "callback" to "detectFaces"
-  @objc public static func detectFaces(
+  // ❌ Do NOT rename this to detectFaces — keep it "callback"
+  @objc public static func callback(
     _ frame: Frame,
     withArguments args: [Any]?
   ) -> [[NSNumber]] {
@@ -40,7 +38,7 @@ public class VisionFaceDetector: FrameProcessorPlugin {
       ]
     }
   }
-}
 
-// 🚩 EXPORT under the name "detectFaces"
-VISION_EXPORT_FRAME_PROCESSOR(VisionFaceDetector, detectFaces)
+  // ─── Export under the name "callback" ───
+  VISION_EXPORT_FRAME_PROCESSOR(VisionFaceDetector, callback)
+}
