@@ -1,20 +1,22 @@
+// VisionFaceDetector.swift
+
 import Foundation
 import Vision
-import VisionCamera          // v4 API
-import CoreMedia             // for CMSampleBufferGetImageBuffer
+import VisionCamera    // v4 API
+import CoreMedia       // for CMSampleBufferGetImageBuffer
 
 @objc(VisionFaceDetector)
 public class VisionFaceDetector: FrameProcessorPlugin {
 
-  @objc public static func callback(
+  // 👉 Rename from "callback" to "detectFaces"
+  @objc public static func detectFaces(
     _ frame: Frame,
     withArguments args: [Any]?
   ) -> [[NSNumber]] {
 
-    // frame.buffer is *always* a CMSampleBuffer in v4
-    let sampleBuffer: CMSampleBuffer = frame.buffer
-
-    guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+    guard let sampleBuffer = frame.buffer as? CMSampleBuffer,
+          let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
+    else {
       return []
     }
 
@@ -25,9 +27,11 @@ public class VisionFaceDetector: FrameProcessorPlugin {
       options: [:]
     ).perform([request])
 
-    guard let faces = request.results as? [VNFaceObservation] else { return [] }
+    guard let results = request.results as? [VNFaceObservation] else {
+      return []
+    }
 
-    return faces.map { f in
+    return results.map { f in
       [
         NSNumber(value: f.boundingBox.origin.x),
         NSNumber(value: f.boundingBox.origin.y),
@@ -37,3 +41,6 @@ public class VisionFaceDetector: FrameProcessorPlugin {
     }
   }
 }
+
+// 🚩 EXPORT under the name "detectFaces"
+VISION_EXPORT_FRAME_PROCESSOR(VisionFaceDetector, detectFaces)
