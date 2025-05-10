@@ -6,12 +6,11 @@ import CoreMedia       // for CMSampleBufferGetImageBuffer
 @objc(VisionFaceDetector)
 public class VisionFaceDetector: FrameProcessorPlugin {
 
-  // ❌ Do NOT rename this to detectFaces — keep it "callback"
+  // ⚠️ Keep the name “callback” to match your JS initFrameProcessorPlugin(...)
   @objc public static func callback(
     _ frame: Frame,
     withArguments args: [Any]?
   ) -> [[NSNumber]] {
-
     guard let sampleBuffer = frame.buffer as? CMSampleBuffer,
           let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
     else {
@@ -38,7 +37,7 @@ public class VisionFaceDetector: FrameProcessorPlugin {
       ]
     }
   }
-
-  // ─── Export under the name "callback" ───
-  VISION_EXPORT_FRAME_PROCESSOR(VisionFaceDetector, callback)
 }
+
+// ─── Export at file scope, not inside the class ───
+VISION_EXPORT_FRAME_PROCESSOR(VisionFaceDetector, callback)
