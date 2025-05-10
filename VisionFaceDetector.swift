@@ -1,22 +1,15 @@
-import VisionCamera
-import Vision
-import CoreMedia
+import VisionCamera       // the React-Native VisionCamera module
+import Vision             // for VNDetectFaceRectanglesRequest
+import CoreMedia          // for CMSampleBufferGetImageBuffer
 
 @objc(VisionFaceDetector)
 public class VisionFaceDetector: FrameProcessorPlugin {
-  // required initializer
-  public override init(
-    proxy: VisionCameraProxyHolder,
-    options: [AnyHashable : Any]! = [:]
-  ) {
-    super.init(proxy: proxy, options: options)
-  }
 
-  // THIS must be named `detectFaces` to line up with the macro below
-  @objc public override func detectFaces(
+  // ⚠️ Keep this exactly as "callback" to match your JS registration
+  @objc public static func callback(
     _ frame: Frame,
-    withArguments args: [AnyHashable : Any]?
-  ) -> Any {
+    withArguments args: [Any]?
+  ) -> [[NSNumber]] {
     guard
       let sampleBuffer = frame.buffer as? CMSampleBuffer,
       let pixelBuffer  = CMSampleBufferGetImageBuffer(sampleBuffer)
@@ -31,7 +24,10 @@ public class VisionFaceDetector: FrameProcessorPlugin {
       options: [:]
     ).perform([request])
 
-    let observations = (request.results as? [VNFaceObservation]) ?? []
+    guard let observations = request.results as? [VNFaceObservation] else {
+      return []
+    }
+
     return observations.map { obs in
       [
         NSNumber(value: obs.boundingBox.origin.x),
