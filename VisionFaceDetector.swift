@@ -1,18 +1,25 @@
-import Foundation
+import VisionCamera
 import Vision
-import VisionCamera    // v4 API
-import CoreMedia       // for CMSampleBufferGetImageBuffer
+import CoreMedia
 
 @objc(VisionFaceDetector)
 public class VisionFaceDetector: FrameProcessorPlugin {
+  
+  public override init(
+    proxy: VisionCameraProxyHolder,
+    options: [AnyHashable:Any]! = [:]
+  ) {
+    super.init(proxy: proxy, options: options)
+  }
 
-  // ⚠️ Keep the name “callback” to match your JS initFrameProcessorPlugin(...)
-  @objc public static func callback(
+  // keep this named `callback` since JS will initFrameProcessorPlugin("callback", {})
+  public override func callback(
     _ frame: Frame,
-    withArguments args: [Any]?
-  ) -> [[NSNumber]] {
-    guard let sampleBuffer = frame.buffer as? CMSampleBuffer,
-          let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
+    withArguments args: [AnyHashable:Any]?
+  ) -> Any {
+    guard
+      let sampleBuffer = frame.buffer as? CMSampleBuffer,
+      let pixelBuffer  = CMSampleBufferGetImageBuffer(sampleBuffer)
     else {
       return []
     }
@@ -24,20 +31,14 @@ public class VisionFaceDetector: FrameProcessorPlugin {
       options: [:]
     ).perform([request])
 
-    guard let results = request.results as? [VNFaceObservation] else {
-      return []
-    }
-
-    return results.map { f in
+    let faces = (request.results as? [VNFaceObservation]) ?? []
+    return faces.map { f in
       [
         NSNumber(value: f.boundingBox.origin.x),
         NSNumber(value: f.boundingBox.origin.y),
         NSNumber(value: f.boundingBox.size.width),
         NSNumber(value: f.boundingBox.size.height),
       ]
-    }
+    ]
   }
 }
-
-// ─── Export at file scope, not inside the class ───
-VISION_EXPORT_FRAME_PROCESSOR(VisionFaceDetector, callback)
